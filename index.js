@@ -6,7 +6,26 @@ function ask(questionText) {
         readlineInterface.question(questionText, resolve);
     });
 }
+/////////state machine
+let states = {
+    '182main': { canChangeTo: ['foyer', 'muddy waters', 'nectars'] },
+    'foyer': { canChangeTo: ['182main', 'classroom'] },
+    'classroom': { canChangeTo: ['foyer'] },
+    'muddy waters': { canChangeTo: ['182main'] }
+};
 
+function enterState(newState) {
+    let validTransitions = states[currentState].canChangeTo;
+    if (validTransitions.includes(newState)) {
+        currentState = newState;
+    } else {
+        console.log("Sorry, you can't go there directly from here.")
+        return this;
+    }
+}
+////////end state machine
+
+let currentState = "182main";
 start();
 
 async function start() {
@@ -46,6 +65,7 @@ async function sign() {
         }
         else {
             console.log("Success! The door opens. \nYou enter the foyer and the door shuts behind you.");
+            enterState("foyer");
             enter()
             break;
         }
@@ -58,9 +78,13 @@ async function enter() {
     let answer = await ask(foyerDesc);
     let inventory = []
     for (; answer;) {
-        if (answer.toLowerCase().includes("take") || answer.toLowerCase().includes("pick up") && answer.toLowerCase().includes("seven days") || answer.toLowerCase().includes("newspaper")) {
+        if (answer.toLowerCase().includes("take") && answer.toLowerCase().includes("seven days")) {
             answer = await ask("You pick up the paper and leaf through it.\n")
             inventory.push("newspaper");
+        }
+        else if (answer.toLowerCase().includes("drop") && answer.toLowerCase().includes("seven days")) {
+            answer = await ask("There will be another one next week anyway.\n")
+            inventory.pop("newspaper");
         }
         else if (answer.toLowerCase() === "inventory") {
             answer = await ask("You are carrying: " + inventory + "\n");
@@ -68,10 +92,33 @@ async function enter() {
         else if (answer.toLowerCase().includes("read") && answer.toLowerCase().includes("paper")) {
             answer = await ask("Looks like another special on weed.\n")
         }
-        else {
-            break;
+        else if (!answer.toLowerCase().includes("upstairs") && !answer.toLowerCase().includes("classroom")) {
+            answer = await ask('Sorry, I don\'t understand "' + answer + '."\n');
         }
+        else {
+                enterState("classroom");
+                classroom();
+                break;
+            }
+        }
+
+
     }
 
+    function classroom() {
+        break;
+    }
 
-}
+//
+//
+//
+//
+//
+//
+//
+
+
+
+//class Burlington {
+//    constructor()
+//}
